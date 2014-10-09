@@ -1,4 +1,5 @@
 from flask import Flask, flash, render_template, request, redirect, url_for
+import xlrd
 
 app = Flask(__name__)
 app.secret_key = 'some_secret'
@@ -20,8 +21,14 @@ def process():
     try:
         student_data = request.files['student-data']
         class_data = request.files['class-data']
+	if student_data and allowed_file(student_data.filename):
+		filename = secure_filename(student_data.filename)
+		student_data.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+	if class_data and allowed_file(class_data.filename):
+		filename2 = secure_filename(class_data.filename)
+		class_data.save(ox.path.join(app.config['UPLOAD_FOLDER'], filename2))
     except KeyError:
-        # One or both of the files was not provided, redirect back to the main page for now
+        # One or both of the files was not provided, redirect back to the main page folder now
         return redirect(url_for('main'))
     return redirect(url_for('results'))
 
