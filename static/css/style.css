@@ -20,3 +20,25 @@
 .hidden-file {
   display: none !important;
 }
+
+.flashes {
+  list-style: none;
+}
+
+.results {
+  list-style: none;
+  margin-top: 15px;
+}
+
+.results > li {
+  margin-top: 15px;
+}
+
+.results a {
+  width: 100%;
+}
+
+.error {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}

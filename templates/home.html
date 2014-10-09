@@ -3,9 +3,21 @@
 <h1 class="text-center">FSEM Scheduler</h1>
 <form enctype="multipart/form-data" action="/process" method="POST">
   <div class="row">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <ul class=flashes>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    {% endwith %}
     <div class="col-md-3 col-md-offset-2">
       <h2 class="text-center">Student Data</h2>
-      <div class="file-handler-box">
+      <div class="file-handler-box" id="sd-file-handler-box">
         <div class="file-field">
           <span id="student-data-filename">No file selected</span>
           <input type="file" class="hidden-file" name="student-data" id="student-data">
@@ -15,7 +27,7 @@
     </div>
     <div class="col-md-3 col-md-offset-2">
       <h2 class="text-center">Class Data</h2>
-      <div class="file-handler-box">
+      <div class="file-handler-box" id="cd-file-handler-box">
         <div class="file-field">
           <span id="class-data-filename">No file selected</span>
           <input type="file" class="hidden-file" name="class-data" id="class-data">
@@ -26,6 +38,12 @@
   </div>
   <div class="row">
     <div class="col-md-2 col-md-offset-5 process">
+      <label for="bad">
+        <input type="checkbox" name="bad"> Not so bad error
+      </label>
+      <label for="worse">
+        <input type="checkbox" name="worse"> Worse error
+      </label>
       <button type="submit" class="btn btn-default">Process</button>
     </div>
   </div>
