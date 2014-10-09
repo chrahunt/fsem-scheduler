@@ -4,8 +4,8 @@ $('#student-data-button').click(function(e) {
   e.preventDefault();
 });
 
-$('#class-data-button').click(function(e) {
-  $('#class-data').click();
+$('#course-data-button').click(function(e) {
+  $('#course-data').click();
   e.preventDefault();
 });
 
@@ -16,9 +16,9 @@ $('#student-data').change(function() {
   $('#student-data-filename').text(fileName);
 });
 
-$('#class-data').change(function() {
+$('#course-data').change(function() {
   var fileName = $(this).val().replace(/.*(\/|\\)/, '');
-  $('#class-data-filename').text(fileName);
+  $('#course-data-filename').text(fileName);
 });
 
 // Makes the element identified by targetElt able to handle files dragged
