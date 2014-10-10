@@ -3,6 +3,8 @@ from werkzeug import secure_filename
 import xlrd, xlwt
 import os
 
+from parse import get_student_headers
+
 app = Flask(__name__)
 app.secret_key = 'some_secret'
 
@@ -30,19 +32,23 @@ def process():
         student_filename = secure_filename(student_data.filename)
         student_path = os.path.join(app.config['UPLOAD_FOLDER'], student_filename)
         student_data.save(student_path)
+    else:
+        flash("Please try again.")
+        return redirect(url_for('main'))
 
     if course_data and allowed_file(course_data.filename):
         course_filename = secure_filename(course_data.filename)
         course_path = os.path.join(app.config['UPLOAD_FOLDER'], course_filename)
         course_data.save(course_path)
+    else:
+        flash("Please try again.")
+        return redirect(url_for('main'))
 
     # Get student/course workbooks
     student_wb = xlrd.open_workbook(filename=student_path)
     course_wb = xlrd.open_workbook(filename=course_path)
 
-    student_sheet = student_wb.sheet_by_index(0)
-    print(student_sheet.cell_value(0, 0))
-
+    student_sheet = student_wb.sheet_by_index(0)    
 
     return redirect(url_for('results'))
 
