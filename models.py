@@ -7,7 +7,7 @@ import re
 class Course(object):
     def __init__(self, course_name, seats):
         self.course_name = course_name
-        self.seats = seats
+        self.seats = int(seats)
         self.students = []
 
     def getName(self):
@@ -23,7 +23,7 @@ class Course(object):
         return self.students
 
     def addSeats(self, numSeats):
-        self.seats += numSeats
+        self.seats += int(numSeats)
 
     def getSeats(self):
         return self.seats
@@ -49,9 +49,9 @@ class Student(object):
         # (e.g. FSEM 100A)
         # TODO: Handle case where preference is not parsed correctly.
         for pref in self.raw_preferences:
-            result = re.split("(.*?) - .*")
+            result = re.split("(.*?) - .*", pref)
             if not(len(result) == 1):
-                preferences.append(result[1])
+                self.preferences.append(result[1])
 
     # Return the array of strings containing only the course numbers of
     # the preferred classes for an individual.
