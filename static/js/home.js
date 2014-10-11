@@ -50,4 +50,4 @@ function fileDragAndDrop(targetElt, fileElt) {
 // Make the boxes around the file inputs respond to files dragged and
 // dropped into them.
 fileDragAndDrop('#sd-file-handler-box', '#student-data');
-fileDragAndDrop('#cd-file-handler-box', '#class-data');
+fileDragAndDrop('#cd-file-handler-box', '#course-data');
