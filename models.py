@@ -1,51 +1,68 @@
-# Here is where we'd put our classes, if we had any!
+import re
 
+# The Course class represents a FSEM into which a student may be placed.
+# The Course class is responsible for holding the information related to
+# the course it represents, as well as managing the list of students
+# that have been assigned to the course.
 class Course(object):
     def __init__(self, course_name, seats):
         self.course_name = course_name
-        self.seats = seats
-    	self.students = []
+        self.seats = int(seats)
+        self.students = []
 
-    def addStudent(Student):
-	self.students.append(Student)
+    def getName(self):
+        return self.course_name
+
+    def addStudent(self, student):
+        self.students.append(student)
     
-    def removeStudent(Student):
-	self.students.remove(Student)
+    def removeStudent(self, student):
+        self.students.remove(student)
 
-    def getStudents():
-	return self.students
+    def getStudents(self):
+        return self.students
 
-    def setSeats(numSeats):
-	self.seats = numSeats
+    def addSeats(self, numSeats):
+        self.seats += int(numSeats)
 
-    def isFull():
-	if len(self.students) == len(self.students):
-		return true
-	else:
-		return false
+    def getSeats(self):
+        return self.seats
+
+    def isFull(self):
+        return len(self.students) == len(self.students)
+
 
 class Student(object):
-    def __init__(self, name, email, time_submitted, pref_one=None, pref_two=None, pref_three=None):
+    def __init__(self, name, time_submitted, pref_one=None, pref_two=None, pref_three=None):
         self.name = name
-	#dont worry about email till we have confirmation from mellinger
-	self.email = email
+        self.time_submitted = time_submitted
+
         self.preferences = []
         self.raw_preferences = []
-        # loop through and process the preferences, putting each into the raw preferences
-        # and parsing to get the course name into the preferences.
-	self.time_submitted = time_submitted
-    
-    def getPreferences():
-	return self.preferences
+        
+        # Add spreadsheet inputs for preferences to raw_preferences array
+        for pref in [pref_one, pref_two, pref_three]:
+            if pref:
+                self.raw_preferences.append(pref)
 
-    def getRawPreferences():
-	return self.raw_preferences
+        # Parse preferences from spreadsheet and get the course number
+        # (e.g. FSEM 100A)
+        # TODO: Handle case where preference is not parsed correctly.
+        for pref in self.raw_preferences:
+            result = re.split("(.*?) - .*", pref)
+            if not(len(result) == 1):
+                self.preferences.append(result[1])
 
-    def getName():
-	return self.name
+    # Return the array of strings containing only the course numbers of
+    # the preferred classes for an individual.
+    def getPreferences(self):
+        return self.preferences
 
-    def getEmail()
-	return self.email
+    def getRawPreferences(self):
+        return self.raw_preferences
 
-    def getTimeSubmitted()
-	return self.time_submitted
+    def getName(self):
+        return self.name
+
+    def getTimeSubmitted(self):
+        return self.time_submitted
