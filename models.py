@@ -6,7 +6,8 @@ import re
 # that have been assigned to the course.
 class Course(object):
     def __init__(self, course_name, seats):
-        self.course_name = course_name
+        # Replace non-breaking space in course name with regular space.
+        self.course_name = course_name.replace(u'\xa0', u' ')
         self.seats = int(seats)
         self.students = []
 
