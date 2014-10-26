@@ -9,17 +9,36 @@ $('#course-data-button').click(function(e) {
   e.preventDefault();
 });
 
-// Update span when files selected.
+/*
+ * This function takes an input identifier corresponding to a file
+ * input and a label corresponding to the element meant to display
+ * the selected file and updates the latter with the value of the
+ * former, or "No file selected." if no file has been selected.
+ */
+function updateSelectedFilePath(input, label) {
+  var path = $(input).val();
+  if (path === "") {
+    $(label).text("No file selected.");
+  } else {
+    var fileName = path.replace(/.*(\/|\\)/, '');
+    $(label).text(fileName);
+  }
+}
+
+// Update span when files selected. Remember these are only triggered
+// when the selected file changes.
 $('#student-data').change(function() {
-  // Get the file name alone, not the entire path.
-  var fileName = $(this).val().replace(/.*(\/|\\)/, '');
-  $('#student-data-filename').text(fileName);
+  updateSelectedFilePath(this, '#student-data-filename');
 });
 
 $('#course-data').change(function() {
-  var fileName = $(this).val().replace(/.*(\/|\\)/, '');
-  $('#course-data-filename').text(fileName);
+  updateSelectedFilePath(this, '#course-data-filename');
 });
+
+// Update spans initially, in case we are coming here as a result of a
+// reload or back/forward browser navigation.
+updateSelectedFilePath('#student-data', '#student-data-filename');
+updateSelectedFilePath('#course-data', '#course-data-filename');
 
 // Makes the element identified by targetElt able to handle files dragged
 // and dropped onto it, setting them as the value of the file selected by
