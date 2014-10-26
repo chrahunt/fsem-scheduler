@@ -4,11 +4,13 @@ it will appear in the student data and course data spreadsheets and the
 parameters to construct these two objects.
 """
 student_headers = {
-    "Name": "name",
+    "ID": "student_id",
+    "First Name": "first_name",
+    "Last Name": "last_name",
+    "Submitted Date": "time_submitted",
     "First Year Seminar DDB 1": "pref_one",
     "First Year Seminar DDB 2": "pref_two",
-    "First Year Seminar DDB 3": "pref_three",
-    "dateSubmitted": "time_submitted"
+    "First Year Seminar DDB 3": "pref_three"
 }
 
 course_headers = {
