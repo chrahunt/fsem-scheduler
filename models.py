@@ -29,7 +29,7 @@ class Course(object):
         return self.seats
 
     def isFull(self):
-        return len(self.students) == len(self.students)
+        return len(self.students) == self.seats
 
 
 class Student(object):
@@ -81,3 +81,6 @@ class Student(object):
     # the student completed the survey.
     def getTimeSubmitted(self):
         return self.time_submitted
+
+    def getStudentId(self):
+        return self.student_id
