@@ -17,7 +17,13 @@ ALLOWED_EXTENSIONS = set(['xlsx'])
 
 # Check to see if file has proper extension.
 def allowed_file(filename):
-  return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+# Take in a cell value and the student workbook and return a datetime 
+# object representing the date/time value of the cell.
+def convert_time(cell_value, student_wb):
+    # Used when dates are re
+    return datetime(*xlrd.xldate_as_tuple(cell_value, student_wb.datemode))
 
 @app.route('/')
 def main():
@@ -53,10 +59,11 @@ def process():
     students = []
     student_sheet = student_wb.sheet_by_index(0)
     student_headers = get_student_headers(student_sheet)
+    
     # Values that may be blank.
     student_acceptable_blanks = ["pref_one", "pref_two", "pref_three"]
     invalid_students = []
-    print student_headers
+    #print student_headers
 
     # Take student data from spreadsheet and put into Student objects.
     for i in range(1, student_sheet.nrows):
@@ -64,6 +71,7 @@ def process():
         student_args = {}
         for name, col in student_headers.iteritems():
             cell_type = student_sheet.cell_type(i, col)
+            # Check that blank cells are allowed to be blank.
             if cell_type == xlrd.XL_CELL_EMPTY:
                 if name in student_acceptable_blanks:
                     continue
@@ -75,7 +83,7 @@ def process():
                 # Do time conversion, see function here
                 # https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966#xldate.xldate_as_tuple-function
                 if name == "time_submitted":
-                    value = datetime(*xlrd.xldate_as_tuple(value, student_wb.datemode))
+                    value = convert_time(value, student_wb)
 
                 student_args[name] = value
 
@@ -88,7 +96,7 @@ def process():
     course_sheet = course_wb.sheet_by_index(0)
     course_headers = get_course_headers(course_sheet)
     # Values that may be blank.
-    course_acceptable_blanks = ["pref_one", "pref_two", "pref_three"]
+    course_acceptable_blanks = []
     invalid_courses = []
 
     for i in range(1, course_sheet.nrows):
@@ -104,6 +112,8 @@ def process():
 
         if not(invalid_row):
             course = Course(**course_args)
+            # Either add seats to existing course, or set course that
+            # we haven't seen before.
             try:
                 courses[course.getName()].addSeats(course.getSeats())
             except KeyError:
@@ -112,8 +122,8 @@ def process():
             invalid_courses.append(i)
 
     # For testing, print values of courses.
-    #for k, v in courses.iteritems():
-    #    print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
+    for k, v in courses.iteritems():
+        print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
 
     return redirect(url_for('results'))
 
