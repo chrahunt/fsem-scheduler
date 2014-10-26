@@ -6,6 +6,7 @@ from datetime import datetime
 
 from parse import get_student_headers, get_course_headers
 from models import Student, Course
+from sortStudents import sortStudents
 
 app = Flask(__name__)
 app.secret_key = 'some_secret'
@@ -123,8 +124,11 @@ def process():
 
     # For testing, print values of courses.
     for k, v in courses.iteritems():
+        print([k])
         print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
 
+    unsorted_students = sortStudents(students, courses)
+    print len(unsorted_students)
     return redirect(url_for('results'))
 
 @app.route('/results')
