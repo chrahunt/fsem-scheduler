@@ -6,7 +6,8 @@ import re
 # that have been assigned to the course.
 class Course(object):
     def __init__(self, course_name, seats):
-        self.course_name = course_name
+        # Replace non-breaking space in course name with regular space.
+        self.course_name = course_name.replace(u'\xa0', u' ')
         self.seats = int(seats)
         self.students = []
 
@@ -29,12 +30,19 @@ class Course(object):
         return self.seats
 
     def isFull(self):
-        return len(self.students) == len(self.students)
+        return len(self.students) == self.seats
 
 
 class Student(object):
-    def __init__(self, name, time_submitted, pref_one=None, pref_two=None, pref_three=None):
-        self.name = name
+    # The Student class requires, at a minimum, the first name, last
+    #   name, time submitted, and student id. The names of the
+    #   parameters for this constructor should match the values of
+    #   student_headers in parse.py, so that iteration over those values
+    #   can construct a dictionary to be passed in to __init__ here.
+    def __init__(self, first_name, last_name, time_submitted, student_id, pref_one=None, pref_two=None, pref_three=None):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.student_id = student_id
         self.time_submitted = time_submitted
 
         self.preferences = []
@@ -58,11 +66,22 @@ class Student(object):
     def getPreferences(self):
         return self.preferences
 
+    # Returns an array of preferences as they appeared in the spreadsheet
     def getRawPreferences(self):
         return self.raw_preferences
 
-    def getName(self):
-        return self.name
+    # Returns the student's first name.
+    def getFName(self):
+        return self.first_name
 
+    # Returns the student's last name.
+    def getLName(self):
+        return self.last_name
+
+    # Returns the datetime object corresponding to the time and date
+    # the student completed the survey.
     def getTimeSubmitted(self):
         return self.time_submitted
+
+    def getStudentId(self):
+        return self.student_id
