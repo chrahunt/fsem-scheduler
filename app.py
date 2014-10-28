@@ -26,6 +26,10 @@ def convert_time(cell_value, student_wb):
     # Used when dates are re
     return datetime(*xlrd.xldate_as_tuple(cell_value, student_wb.datemode))
 
+# Take in a file name and return the file name datestamped.
+def timeStamped(fname, fmt='%Y-%m-%d-%H-%M-%S_{fname}'):
+    return datetime.now().strftime(fmt).format(fname=fname)
+
 @app.route('/')
 def main():
     return render_template('home.html')
@@ -123,12 +127,36 @@ def process():
             invalid_courses.append(i)
 
     # For testing, print values of courses.
-    for k, v in courses.iteritems():
-        print([k])
-        print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
+    #for k, v in courses.iteritems():
+    #    print([k])
+    #    print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
 
     unsorted_students = sortStudents(students, courses)
-    print len(unsorted_students)
+    u_students_wb_path = os.path.join(
+        app.config['UPLOAD_FOLDER'],
+        timeStamped("unsorted-students.xls")
+    )
+    # At this point, the courses will have had their arrays filled with students.
+
+    unsorted_students_wb = xlwt.Workbook()
+    unsorted_students_sheet = unsorted_students_wb.add_sheet("Students")
+    unsorted_student_headers = [
+        "ID", "First Name", "Last Name", "First Year Seminar DDB 1", "First Year Seminar DDB 2", "First Year Seminar DDB 3"
+    ]
+    for index, header in enumerate(unsorted_student_headers):
+        unsorted_students_sheet.write(0, index, header)
+
+    for i, student in enumerate(unsorted_students):
+        unsorted_students_sheet.write(i + 1, 0, student.getStudentId())
+        unsorted_students_sheet.write(i + 1, 1, student.getFName())
+        unsorted_students_sheet.write(i + 1, 2, student.getLName())
+        prefs = student.getRawPreferences()
+        for j, pref in enumerate(prefs):
+            unsorted_students_sheet.write(i + 1, j + 3, pref)
+
+
+    unsorted_students_wb.save(u_students_wb_path)
+    print(u_students_wb_path)
     return redirect(url_for('results'))
 
 @app.route('/results')
