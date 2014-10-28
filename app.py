@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, request, redirect, url_for
+from flask import Flask, flash, render_template, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename
 import xlrd, xlwt
 import os
@@ -133,9 +133,10 @@ def process():
 
     ### UNSORTED STUDENTS ###
     unsorted_students = sortStudents(students, courses)
+    u_students_filename = timeStamped("unsorted-students.xls")
     u_students_wb_path = os.path.join(
         app.config['UPLOAD_FOLDER'],
-        timeStamped("unsorted-students.xls")
+        u_students_filename
     )
     # At this point, the courses will have had their arrays filled with students.
 
@@ -163,9 +164,10 @@ def process():
     ]
     sorted_students_wb = xlwt.Workbook()
     sorted_students_sheet = sorted_students_wb.add_sheet("Students")
+    s_students_filename = timeStamped("sorted-students.xls")
     s_students_wb_path = os.path.join(
         app.config['UPLOAD_FOLDER'],
-        timeStamped("sorted-students.xls")
+        s_students_filename
     )
     # Create sorted students array
     sorted_students = []
@@ -186,16 +188,34 @@ def process():
     sorted_students_wb.save(s_students_wb_path)
     print(s_students_wb_path)
 
+    ### CLOSED COURSES ###
+    """
+    closed_courses_filename = timeStamped("closed-courses.xls")
+    c_courses_wb_path = os.path.join(
+        app.config['UPLOAD_FOLDER'],
+        closed_courses_filename
+    )
+    closed_courses = [c for (name, c) in courses if c.isFull()]
+    closed_course_headers = [
+        "Course Name", "Seats"
+    ]
+    closed_courses_wb = xlwt.Workbook()
+    closed_course_sheet = closed_courses_wb.add_sheet("Courses")
+    for index, header in enumerate(closed_course_headers):
+        closed_course_sheet.write(0, index, header)
+    """
 
-    return redirect(url_for('results'))
-
-@app.route('/results')
-def results():
-    return render_template('results.html')
+    
+    return render_template('results.html', s_path=s_students_filename, us_path=u_students_filename)
 
 @app.route('/error')
 def error():
     return render_template('error.html')
+
+@app.route('/uploads/<filename>')
+def uploads(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
 
 if __name__ == "__main__":
     app.debug = True
