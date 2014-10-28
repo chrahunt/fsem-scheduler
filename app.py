@@ -189,13 +189,12 @@ def process():
     print(s_students_wb_path)
 
     ### CLOSED COURSES ###
-    """
     closed_courses_filename = timeStamped("closed-courses.xls")
     c_courses_wb_path = os.path.join(
         app.config['UPLOAD_FOLDER'],
         closed_courses_filename
     )
-    closed_courses = [c for (name, c) in courses if c.isFull()]
+    closed_courses = [c for (name, c) in courses.iteritems() if c.isFull()]
     closed_course_headers = [
         "Course Name", "Seats"
     ]
@@ -203,10 +202,15 @@ def process():
     closed_course_sheet = closed_courses_wb.add_sheet("Courses")
     for index, header in enumerate(closed_course_headers):
         closed_course_sheet.write(0, index, header)
-    """
+    
+    for i, course in enumerate(closed_courses):
+        closed_course_sheet.write(i + 1, 0, course.getName())
+        closed_course_sheet.write(i + 1, 1, course.getSeats())
+
+    closed_courses_wb.save(c_courses_wb_path)
 
     
-    return render_template('results.html', s_path=s_students_filename, us_path=u_students_filename)
+    return render_template('results.html', s_path=s_students_filename, us_path=u_students_filename, c_courses=closed_courses_filename)
 
 @app.route('/error')
 def error():
