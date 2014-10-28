@@ -131,6 +131,7 @@ def process():
     #    print([k])
     #    print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
 
+    ### UNSORTED STUDENTS ###
     unsorted_students = sortStudents(students, courses)
     u_students_wb_path = os.path.join(
         app.config['UPLOAD_FOLDER'],
@@ -154,9 +155,38 @@ def process():
         for j, pref in enumerate(prefs):
             unsorted_students_sheet.write(i + 1, j + 3, pref)
 
-
     unsorted_students_wb.save(u_students_wb_path)
-    print(u_students_wb_path)
+
+    ### SORTED STUDENTS ###
+    sorted_student_headers = [
+        "ID", "First Name", "Last Name", "FSEM Chosen"
+    ]
+    sorted_students_wb = xlwt.Workbook()
+    sorted_students_sheet = sorted_students_wb.add_sheet("Students")
+    s_students_wb_path = os.path.join(
+        app.config['UPLOAD_FOLDER'],
+        timeStamped("sorted-students.xls")
+    )
+    # Create sorted students array
+    sorted_students = []
+    for course_name, course in courses.iteritems():
+        course_students = map(lambda s: (course_name, s), course.getStudents())
+        sorted_students.extend(course_students)
+
+    # Add headers to sorted student sheet
+    for index, header in enumerate(sorted_student_headers):
+        sorted_students_sheet.write(0, index, header)
+
+    for (i, (course_name, student)) in enumerate(sorted_students):
+        sorted_students_sheet.write(i + 1, 0, student.getStudentId())
+        sorted_students_sheet.write(i + 1, 1, student.getFName())
+        sorted_students_sheet.write(i + 1, 2, student.getLName())
+        sorted_students_sheet.write(i + 1, 3, course_name)
+
+    sorted_students_wb.save(s_students_wb_path)
+    print(s_students_wb_path)
+
+
     return redirect(url_for('results'))
 
 @app.route('/results')
