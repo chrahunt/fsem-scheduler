@@ -4,7 +4,7 @@ import xlrd, xlwt
 import os
 from datetime import datetime
 
-from parse import get_student_headers, get_course_headers
+from parse import get_student_headers, get_course_headers, HeaderError
 from models import Student, Course
 from sortStudents import sortStudents
 
@@ -68,7 +68,7 @@ def process():
 
     if not os.path.isfile(student_path):
         flash("Error saving Student spreadsheet. Please try again.")
-        
+
     if not os.path.isfile(course_path):
         flash("Error saving Course spreadsheet. Please try again.")
     # Get student/course workbooks
@@ -84,9 +84,23 @@ def process():
         flash("Course spreadsheet formatted incorrectly. Please try again.")
         return redirect(url_for('main'))
 
+    if (student_wb.nsheets == 0):
+        flash("Student spreadsheet does not contain any sheets. Please correct and try again.")
+        return redirect(url_for('main'))
+
+    if (course_wb.nsheets == 0):
+        flash("Course spreadsheet does not contain any sheets. Please correct and try again.")
+        return redirect(url_for('main'))
+
     students = []
     student_sheet = student_wb.sheet_by_index(0)
-    student_headers = get_student_headers(student_sheet)
+    try:
+        student_headers = get_student_headers(student_sheet)
+    except HeaderError as e:
+        missing_headers = e.get_headers()
+        missing_header_list = reduce(lambda text, header: "{}, \"{}\"".format(text, header), missing_headers[1:], "\"{}\"".format(missing_headers[0]))
+        flash("Student spreadsheet does not have the following header{}: {}".format("s" if len(missing_headers) > 1 else "", missing_header_list))
+        return redirect(url_for('main'))
     
     # Values that may be blank.
     student_acceptable_blanks = ["pref_one", "pref_two", "pref_three"]
