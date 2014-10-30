@@ -14,7 +14,7 @@ app.secret_key = 'some_secret'
 # Just saving the location of the uploads to the config dict
 app.config['UPLOAD_FOLDER'] = os.path.abspath("uploads")
 # Allows extensions used in allowed_file
-ALLOWED_EXTENSIONS = set(['xlsx'])
+ALLOWED_EXTENSIONS = set(['xlsx', 'xls'])
 
 # Check to see if file has proper extension.
 def allowed_file(filename):
@@ -39,6 +39,9 @@ def process():
     form = request.form
     student_data = request.files['student-data']
     course_data = request.files['course-data']
+    if (not student_data):
+        print("Not found.");
+    #print(student_data)
 
     # Save both student and course data.
     if student_data and allowed_file(student_data.filename):
@@ -46,7 +49,10 @@ def process():
         student_path = os.path.join(app.config['UPLOAD_FOLDER'], student_filename)
         student_data.save(student_path)
     else:
-        flash("Please try again.")
+        if not student_data:
+            flash("Student data spreadsheet not found, please select and try again.")
+        elif not allowed_file(student_data.filename):
+            flash("Student data spreadsheet must have extension .xls or .xlsx. Please select the proper spreadsheet and try again.")
         return redirect(url_for('main'))
 
     if course_data and allowed_file(course_data.filename):
@@ -54,7 +60,10 @@ def process():
         course_path = os.path.join(app.config['UPLOAD_FOLDER'], course_filename)
         course_data.save(course_path)
     else:
-        flash("Please try again.")
+        if not course_data:
+            flash("Course data spreadsheet not found, please select and try again.")
+        elif not allowed_file(course_data.filename):
+            flash("Course data spreadsheet must have extension .xls or .xlsx. Please select the proper spreadsheet and try again.")
         return redirect(url_for('main'))
 
     # Get student/course workbooks
