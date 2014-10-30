@@ -36,12 +36,12 @@ def main():
 
 @app.route('/process', methods=['POST'])
 def process():
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.mkdir(app.config['UPLOAD_FOLDER'])
+
     form = request.form
     student_data = request.files['student-data']
     course_data = request.files['course-data']
-    if (not student_data):
-        print("Not found.");
-    #print(student_data)
 
     # Save both student and course data.
     if student_data and allowed_file(student_data.filename):
@@ -66,9 +66,23 @@ def process():
             flash("Course data spreadsheet must have extension .xls or .xlsx. Please select the proper spreadsheet and try again.")
         return redirect(url_for('main'))
 
+    if not os.path.isfile(student_path):
+        flash("Error saving Student spreadsheet. Please try again.")
+        
+    if not os.path.isfile(course_path):
+        flash("Error saving Course spreadsheet. Please try again.")
     # Get student/course workbooks
-    student_wb = xlrd.open_workbook(filename=student_path)
-    course_wb = xlrd.open_workbook(filename=course_path)
+    try:
+        student_wb = xlrd.open_workbook(filename=student_path)
+    except xlrd.XLRDError:
+        flash("Student spreadsheet formatted incorrectly. Please try again.")
+        return redirect(url_for('main'))
+
+    try:
+        course_wb = xlrd.open_workbook(filename=course_path)
+    except xlrd.XLRDError:
+        flash("Course spreadsheet formatted incorrectly. Please try again.")
+        return redirect(url_for('main'))
 
     students = []
     student_sheet = student_wb.sheet_by_index(0)
