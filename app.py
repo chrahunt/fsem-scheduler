@@ -152,6 +152,7 @@ def process():
         if not(invalid_row):
             students.append(Student(**student_args))
         else:
+            # Student was mising a column they needed.
             invalid_students.append(i)
 
     courses = {}
@@ -160,6 +161,7 @@ def process():
     course_acceptable_blanks = []
     invalid_courses = []
 
+    # Put course information into course object.
     for i in range(1, course_sheet.nrows):
         invalid_row = False
         course_args = {}
@@ -187,14 +189,17 @@ def process():
     #    print([k])
     #    print(u"Course: {}; Seats: {}".format(v.getName(), v.getSeats()))
 
+    # Do allocation of students, returns unsorted students and courses that were
+    # not found, and also inserts students into the students list in each course
+    unsorted_students, missing_courses = sortStudents(students, courses)
+    # At this point,  courses will have had their arrays filled with students.
+    
     ### UNSORTED STUDENTS ###
-    unsorted_students = sortStudents(students, courses)
     u_students_filename = timeStamped("unsorted-students.xls")
     u_students_wb_path = os.path.join(
         app.config['UPLOAD_FOLDER'],
         u_students_filename
     )
-    # At this point, the courses will have had their arrays filled with students.
 
     # Construct workbooks and populate them.
     unsorted_students_wb = xlwt.Workbook()
@@ -253,7 +258,7 @@ def process():
     )
     closed_courses = [c for (name, c) in courses.iteritems() if c.isFull()]
     closed_course_headers = [
-        "Course Name", "Seats"
+        "Course Name", "Seats", "Requests"
     ]
     closed_courses_wb = xlwt.Workbook()
     closed_course_sheet = closed_courses_wb.add_sheet("Courses")
@@ -263,9 +268,20 @@ def process():
     for i, course in enumerate(closed_courses):
         closed_course_sheet.write(i + 1, 0, course.getName())
         closed_course_sheet.write(i + 1, 1, course.getSeats())
+        closed_course_sheet.write(i + 1, 2, course.getRequests())
 
     closed_courses_wb.save(c_courses_wb_path)
     
+    # Inform about rows with invalid students.
+    if (invalid_students):
+        invalid_student_list = ', '.join([str(x) for x in invalid_students])
+        flash("The following row{} in the Student spreadsheet were missing necessary values: {}".format('s' if len(invalid_students) > 1 else "", invalid_student_list))
+
+    # Inform about requests made for missing courses.
+    if (missing_courses):
+        invalid_courses_list = '; '.join(["{} ({})".format(k, len(v)) for k, v in missing_courses.iteritems()])
+        flash("The following course{} requested but not found in the course spreadsheet (number of times requested listed): {}".format('s were' if len(missing_courses) > 1 else ' was', invalid_courses_list))
+
     return render_template('results.html', s_path=s_students_filename, us_path=u_students_filename, c_courses=closed_courses_filename)
 
 @app.route('/error')
