@@ -36,6 +36,7 @@ def main():
 
 @app.route('/process', methods=['POST'])
 def process():
+    # Make upload directory if needed.
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.mkdir(app.config['UPLOAD_FOLDER'])
 
@@ -43,12 +44,13 @@ def process():
     student_data = request.files['student-data']
     course_data = request.files['course-data']
 
-    # Save both student and course data.
+    # Save spreadsheets locally.
     if student_data and allowed_file(student_data.filename):
         student_filename = secure_filename(student_data.filename)
         student_path = os.path.join(app.config['UPLOAD_FOLDER'], student_filename)
         student_data.save(student_path)
     else:
+        # Error handling: No spreadsheet uploaded or wrong file extension for student sheet.
         if not student_data:
             flash("Student data spreadsheet not found, please select and try again.")
         elif not allowed_file(student_data.filename):
@@ -60,30 +62,36 @@ def process():
         course_path = os.path.join(app.config['UPLOAD_FOLDER'], course_filename)
         course_data.save(course_path)
     else:
+        # Error handling: No spreadsheet uploaded or wrong file extension for course sheet.
         if not course_data:
             flash("Course data spreadsheet not found, please select and try again.")
         elif not allowed_file(course_data.filename):
             flash("Course data spreadsheet must have extension .xls or .xlsx. Please select the proper spreadsheet and try again.")
         return redirect(url_for('main'))
 
+    # Check to make sure the files were saved.
     if not os.path.isfile(student_path):
         flash("Error saving Student spreadsheet. Please try again.")
 
     if not os.path.isfile(course_path):
         flash("Error saving Course spreadsheet. Please try again.")
-    # Get student/course workbooks
+
+    # Load workbooks into XLRD workbook objects.
     try:
         student_wb = xlrd.open_workbook(filename=student_path)
     except xlrd.XLRDError:
+        # Error handling: xlrd error opening student workbook.
         flash("Student spreadsheet formatted incorrectly. Please try again.")
         return redirect(url_for('main'))
 
     try:
         course_wb = xlrd.open_workbook(filename=course_path)
     except xlrd.XLRDError:
+        # Error handling: xlrd error opening course workbook.
         flash("Course spreadsheet formatted incorrectly. Please try again.")
         return redirect(url_for('main'))
 
+    # Error handling: Check that both the workbooks have at least 1 sheet.
     if (student_wb.nsheets == 0):
         flash("Student spreadsheet does not contain any sheets. Please correct and try again.")
         return redirect(url_for('main'))
@@ -92,20 +100,32 @@ def process():
         flash("Course spreadsheet does not contain any sheets. Please correct and try again.")
         return redirect(url_for('main'))
 
-    students = []
+    # Retrieve the columns corresponding the headers for each sheet.
     student_sheet = student_wb.sheet_by_index(0)
     try:
         student_headers = get_student_headers(student_sheet)
     except HeaderError as e:
+        # Error handling: Some headers were not found in the student sheet.
         missing_headers = e.get_headers()
         missing_header_list = reduce(lambda text, header: "{}, \"{}\"".format(text, header), missing_headers[1:], "\"{}\"".format(missing_headers[0]))
         flash("Student spreadsheet does not have the following header{}: {}".format("s" if len(missing_headers) > 1 else "", missing_header_list))
         return redirect(url_for('main'))
     
-    # Values that may be blank.
+    course_sheet = course_wb.sheet_by_index(0)
+    try:
+        course_headers = get_course_headers(course_sheet)
+    except HeaderError as e:
+        # Error handling: Some headers were not found in the course sheet.
+        missing_headers = e.get_headers()
+        missing_header_list = reduce(lambda text, header: "{}, \"{}\"".format(text, header), missing_headers[1:], "\"{}\"".format(missing_headers[0]))
+        flash("Course spreadsheet does not have the following header{}: {}".format("s" if len(missing_headers) > 1 else "", missing_header_list))
+        return redirect(url_for('main'))
+    
+    # Put data from sheet into objects.
+    # Values that may be blank for each row.
     student_acceptable_blanks = ["pref_one", "pref_two", "pref_three"]
+    students = []
     invalid_students = []
-    #print student_headers
 
     # Take student data from spreadsheet and put into Student objects.
     for i in range(1, student_sheet.nrows):
@@ -135,8 +155,7 @@ def process():
             invalid_students.append(i)
 
     courses = {}
-    course_sheet = course_wb.sheet_by_index(0)
-    course_headers = get_course_headers(course_sheet)
+    
     # Values that may be blank.
     course_acceptable_blanks = []
     invalid_courses = []
@@ -177,6 +196,7 @@ def process():
     )
     # At this point, the courses will have had their arrays filled with students.
 
+    # Construct workbooks and populate them.
     unsorted_students_wb = xlwt.Workbook()
     unsorted_students_sheet = unsorted_students_wb.add_sheet("Students")
     unsorted_student_headers = [
@@ -245,7 +265,6 @@ def process():
         closed_course_sheet.write(i + 1, 1, course.getSeats())
 
     closed_courses_wb.save(c_courses_wb_path)
-
     
     return render_template('results.html', s_path=s_students_filename, us_path=u_students_filename, c_courses=closed_courses_filename)
 
