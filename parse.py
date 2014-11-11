@@ -18,6 +18,12 @@ course_headers = {
     "Size": "seats"
 }
 
+class HeaderError(Exception):
+    def __init__(self, headers):
+        self.headers = headers
+    def get_headers(self):
+        return self.headers
+
 # Wrapper around get_header_indices that uses the values defined in 
 # student_headers. See get_header_indices.
 def get_student_headers(sheet):
@@ -43,7 +49,8 @@ Returns a dict of the format:
     ...
   }
 where the keys are the names of the properties and the values are the
-corresponding column numbers.
+corresponding column numbers. If a header in labels is not found, then
+a HeaderError is raised.
 """
 def get_header_indices(sheet, labels):
     header_indices = {}
@@ -54,5 +61,13 @@ def get_header_indices(sheet, labels):
             header_indices[header_key] = col
         except KeyError:
             continue
+
+    missing_headers = []
+    for key, value in labels.iteritems():
+        if not(value in header_indices):
+            missing_headers.append(key)
+
+    if (missing_headers):
+        raise HeaderError(missing_headers)
 
     return header_indices

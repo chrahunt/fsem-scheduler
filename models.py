@@ -10,12 +10,16 @@ class Course(object):
         self.course_name = course_name.replace(u'\xa0', u' ')
         self.seats = int(seats)
         self.students = []
+        self.requests = 0
 
     def getName(self):
         return self.course_name
 
+    # Adds student to the list of students for the course and also
+    # increments the requests for this course.
     def addStudent(self, student):
         self.students.append(student)
+        self.incrementRequests()
     
     def removeStudent(self, student):
         self.students.remove(student)
@@ -31,6 +35,14 @@ class Course(object):
 
     def isFull(self):
         return len(self.students) == self.seats
+
+    # Increments number of requests for the course.
+    def incrementRequests(self):
+        self.requests += 1
+
+    # Returns number of requests made for course.
+    def getRequests(self):
+        return self.requests
 
 
 class Student(object):
